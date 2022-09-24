@@ -1,8 +1,2 @@
-venv/
-.idea/
-.vscode/
-.env
-__pycache__/
-*.pyc
-
 note.txt
+unpublished.txt
