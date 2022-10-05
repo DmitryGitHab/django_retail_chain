@@ -418,7 +418,7 @@ class BasketView(APIView):
                 order_item.update({'order': basket.id})
 
                 product = Product.objects.filter(external_id=order_item['external_id']).values('category', 'shop')
-                order_item.update({'category': product[0]['category'], 'shop': product[0]['shop']})
+                # order_item.update({'category': product[0]['category'], 'shop': product[0]['shop']})
 
                 serializer = OrderItemAddSerializer(data=order_item)
                 if serializer.is_valid():
