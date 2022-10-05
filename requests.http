@@ -5,10 +5,222 @@ Content-Type: application/json
 {
         "first_name": "Dmitry",
         "last_name": "Babanov",
-        "email": "babanov91@gmail.comm",
-        "password": "Qwerty",
+        "email": "babanov91@gmail.com",
+        "password": "Qwerty000",
         "company": "Company_1",
         "position": "Position_1"
     }
 
+
 ###
+POST http://127.0.0.1:8000/api/user/register/confirm
+Content-Type: application/json
+
+{
+  "email":"babanov91@gmail.com",
+  "token":"bfb17b8f9db93fabbce36fc"
+}
+###
+POST http://127.0.0.1:8000/api/user/login
+Content-Type: application/json
+
+{
+  "email":"babanov91@gmail.com",
+  "password":"Qwerty000"
+}
+
+###
+
+GET http://127.0.0.1:8000/api/user/details
+Content-Type: application/json
+Authorization: Token 881c8ff1c624cea6510191df67d24a7cd6aa5eda
+
+###
+
+POST http://127.0.0.1:8000/api/user/details
+Content-Type: application/json
+Authorization: Token 881c8ff1c624cea6510191df67d24a7cd6aa5eda
+
+{
+        "first_name": "Dmitry",
+        "last_name": "Babanov",
+        "email": "babanov91@gmail.com",
+        "password": "Qwerty000",
+        "company": "Company_new",
+        "position": "Position_new",
+        "type" : "buyer"
+    }
+
+###
+GET http://127.0.0.1:8000/api/categories
+
+
+###
+GET http://127.0.0.1:8000/api/shops
+
+
+###
+GET http://127.0.0.1:8000/api/products
+
+
+###
+GET http://127.0.0.1:8000/api/user/contact
+Authorization: Token 881c8ff1c624cea6510191df67d24a7cd6aa5eda
+
+###
+
+POST http://127.0.0.1:8000/api/user/contact
+Authorization: Token 881c8ff1c624cea6510191df67d24a7cd6aa5eda
+Content-Type: application/json
+
+{
+    "city": "Tyumen",
+    "street": "Lenina",
+    "house": "808",
+    "structure": "8",
+    "building": "0",
+    "apartment": "72",
+    "phone": "8-3452"
+    }
+
+###
+
+PUT http://127.0.0.1:8000/api/user/contact
+Authorization: Token 881c8ff1c624cea6510191df67d24a7cd6aa5eda
+Content-Type: application/json
+
+{
+    "city": "Tyumen",
+    "street": "Lenina",
+    "house": "9999",
+    "structure": "8",
+    "building": "8",
+    "apartment": "72",
+    "phone": "8-3452",
+    "id": "2"
+                }
+
+###
+DELETE http://127.0.0.1:8000/api/user/contact
+Authorization: Token 881c8ff1c624cea6510191df67d24a7cd6aa5eda
+Content-Type: application/json
+
+{
+  "items" : "1"
+}
+
+###
+
+GET http://127.0.0.1:8000/api/basket
+Authorization: Token 881c8ff1c624cea6510191df67d24a7cd6aa5eda
+Content-Type:application/json
+
+
+###
+POST http://127.0.0.1:8000/api/basket
+Authorization: Token 881c8ff1c624cea6510191df67d24a7cd6aa5eda
+Content-Type:application/json
+
+ {
+   "items": 
+   [
+     {
+    "product_name": "I-phone XX", 
+    "external_id":1,
+    "product_info": 33, 
+    "category": 1,
+    "shop": 2,
+     "quantity": 7}
+   ]
+   }
+###
+
+PUT http://127.0.0.1:8000/api/basket
+Authorization: Token 881c8ff1c624cea6510191df67d24a7cd6aa5eda
+Content-Type:application/json
+
+ {
+   "items": 
+   [
+     {
+     "id":1,
+     "quantity": 11}
+   ]
+   }
+
+###
+DELETE http://127.0.0.1:8000/api/basket
+Authorization: Token 881c8ff1c624cea6510191df67d24a7cd6aa5eda
+Content-Type:application/json
+
+ {
+   "items": "2"
+   
+   }
+
+###
+''' Необходимо создать юзера - магазинаы'''
+
+###
+GET http://127.0.0.1:8000/api/partner/state
+Authorization: Token 7ae7256a19640b38071d390a722030c8dc4f9230
+Content-Type:application/json
+
+###
+POST http://127.0.0.1:8000/api/partner/state
+Authorization: Token 7ae7256a19640b38071d390a722030c8dc4f9230
+Content-Type:application/json
+
+{
+  "state":"on"
+}
+
+###
+POST http://127.0.0.1:8000/api/partner/update
+Authorization: Token 7ae7256a19640b38071d390a722030c8dc4f9230
+Content-Type:application/json
+
+{
+    "url": "https://raw.githubusercontent.com/DmitryGitHab/django_retail_chain/main/data/shop2.yaml"
+}
+
+
+
+###
+POST http://127.0.0.1:8000/api/basket
+Authorization: Token 881c8ff1c624cea6510191df67d24a7cd6aa5eda
+Content-Type:application/json
+
+ {
+   "items": 
+   [
+     {
+    "product_name": "Смартфон Samsung A10 (синий)", 
+    "external_id": 554563,
+    "category": 224,
+    "shop": 2,
+     "quantity": 1}
+   ]
+   }
+
+###
+GET http://127.0.0.1:8000/api/order
+Authorization: Token 881c8ff1c624cea6510191df67d24a7cd6aa5eda
+Content-Type:application/json
+
+###
+POST http://127.0.0.1:8000/api/order
+Authorization: Token 881c8ff1c624cea6510191df67d24a7cd6aa5eda
+Content-Type:application/json
+
+{
+  "id":"1",
+  "contact" : "2"
+}
+
+
+
+###
+GET http://127.0.0.1:8000/api/partner/orders
+Authorization: Token 7ae7256a19640b38071d390a722030c8dc4f9230
+Content-Type:application/json

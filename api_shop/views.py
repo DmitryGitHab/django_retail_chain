@@ -1,5 +1,6 @@
 from distutils.util import strtobool
 
+# import send_email as send_email
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.conf import settings
@@ -7,6 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import URLValidator
 from django.db import IntegrityError
 from django.db.models import Q, Sum, Prefetch
+from django.http import JsonResponse
 from requests import get
 from rest_framework import status
 from rest_framework.authtoken.models import Token
@@ -418,7 +420,7 @@ class BasketView(APIView):
                 order_item.update({'order': basket.id})
 
                 product = Product.objects.filter(external_id=order_item['external_id']).values('category', 'shop')
-                # order_item.update({'category': product[0]['category'], 'shop': product[0]['shop']})
+                order_item.update({'category': product[0]['category'], 'shop': product[0]['shop']})
 
                 serializer = OrderItemAddSerializer(data=order_item)
                 if serializer.is_valid():
@@ -504,7 +506,7 @@ class OrderView(APIView):
         serializer = OrderSerializer(order, many=True)
         return Response(serializer.data)
 
-    # Размещаем заказ из корзины и посылаем письмо об изменении статуса заказа.
+
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return Response({'status': False, 'error': 'Вы не авторизовались!'}, status=status.HTTP_403_FORBIDDEN)
