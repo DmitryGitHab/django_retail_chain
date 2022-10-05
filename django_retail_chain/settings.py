@@ -162,5 +162,5 @@ REST_FRAMEWORK = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-print(EMAIL_HOST_PASSWORD)
+# print(EMAIL_HOST_PASSWORD)
 

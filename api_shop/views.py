@@ -37,7 +37,7 @@ class RegisterAccount(APIView):
                                 status=status.HTTP_403_FORBIDDEN)
             else:
                 # проверяем данные для уникальности имени пользователя
-                request.data._mutable = True
+                # request.data._mutable = True
                 request.data.update({})
                 user_serializer = UserSerializer(data=request.data)
                 if user_serializer.is_valid():
@@ -155,7 +155,7 @@ class ContactView(APIView):
 
 
         if {'city', 'street', 'phone'}.issubset(request.data):
-            request.data._mutable = True
+            # request.data._mutable = True
             request.data.update({'user': request.user.id})
             print(request.user.id)
             serializer = ContactSerializer(data=request.data)
@@ -413,7 +413,8 @@ class BasketView(APIView):
         if items:
             basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='basket')
             objects_created = 0
-            for order_item in items:
+            # for order_item in items:
+            for order_item in load_json(json.dumps(items)):
                 order_item.update({'order': basket.id})
 
                 product = Product.objects.filter(external_id=order_item['external_id']).values('category', 'shop')

@@ -1,0 +1,22 @@
+shop: Phone Shop
+categories:
+  - id: 224
+    name: Смартфоны
+  - id: 15
+    name: Аксессуары
+  - id: 1
+    name: Flash-накопители
+
+goods:
+  - id: 554563
+    category: 224
+    model: apple/iphone/xr
+    name: Смартфон Samsung A10 (синий)
+    price: 40000
+    price_rrc: 43990
+    quantity: 45
+    parameters:
+      "Диагональ (дюйм)": 6.1
+      "Разрешение (пикс)": 1792x828
+      "Встроенная память (Гб)": 64
+      "Цвет": синий

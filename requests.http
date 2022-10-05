@@ -1,0 +1,14 @@
+###
+POST http://127.0.0.1:8000/api/user/register
+Content-Type: application/json
+
+{
+        "first_name": "Dmitry",
+        "last_name": "Babanov",
+        "email": "babanov91@gmail.comm",
+        "password": "Qwerty",
+        "company": "Company_1",
+        "position": "Position_1"
+    }
+
+###
