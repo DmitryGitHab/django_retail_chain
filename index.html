@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order Desk — Retail Chain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12161a;
+    --panel:#1b2127;
+    --panel-2:#212831;
+    --line:#333c46;
+    --text:#e9e6dd;
+    --text-dim:#9aa3ad;
+    --amber:#d9a441;
+    --amber-dim:#8a6a2f;
+    --green:#57a173;
+    --brick:#c4573c;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .disp{font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.04em;}
+
+  a{color:inherit;}
+  button{
+    font-family:inherit;
+    cursor:pointer;
+    border:1px solid var(--line);
+    background:var(--panel-2);
+    color:var(--text);
+    padding:8px 14px;
+    border-radius:var(--radius);
+    font-size:13px;
+    transition:border-color .15s, background .15s;
+  }
+  button:hover{border-color:var(--amber-dim);}
+  button.primary{
+    background:var(--amber);
+    color:#1a1406;
+    border-color:var(--amber);
+    font-weight:600;
+  }
+  button.primary:hover{background:#e8b657;}
+  button:disabled{opacity:.4; cursor:not-allowed;}
+  input,select{
+    font-family:inherit;
+    background:var(--bg);
+    color:var(--text);
+    border:1px solid var(--line);
+    padding:8px 10px;
+    border-radius:var(--radius);
+    font-size:13px;
+    width:100%;
+  }
+  input:focus,select:focus,button:focus-visible{
+    outline:2px solid var(--amber);
+    outline-offset:1px;
+  }
+  label{font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; display:block; margin-bottom:4px;}
+
+  /* Header */
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 24px;
+    border-bottom:1px solid var(--line);
+    position:sticky; top:0; background:var(--bg); z-index:20;
+    gap:16px; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:baseline; gap:10px;}
+  .brand .tag{
+    background:var(--amber); color:#1a1406; font-size:10px; font-weight:700;
+    padding:2px 6px; border-radius:2px; letter-spacing:.08em;
+  }
+  .brand h1{font-size:20px; margin:0; font-weight:600;}
+  .brand small{color:var(--text-dim); font-size:11px;}
+  .header-right{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  #apiBase{width:220px; font-size:11px;}
+  .userchip{font-size:12px; color:var(--text-dim);}
+  .cart-btn{position:relative;}
+  .cart-count{
+    position:absolute; top:-7px; right:-7px;
+    background:var(--brick); color:#fff; font-size:10px; font-weight:700;
+    min-width:16px; height:16px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center; padding:0 3px;
+  }
+
+  main{padding:24px; max-width:1180px; margin:0 auto;}
+
+  .toolbar{display:flex; gap:12px; flex-wrap:wrap; align-items:end; margin-bottom:20px;}
+  .toolbar .field{min-width:180px;}
+
+  .banner{
+    padding:10px 14px; border-radius:var(--radius); font-size:13px; margin-bottom:16px;
+    border:1px solid var(--line);
+  }
+  .banner.error{border-color:var(--brick); color:#f0a58f; background:rgba(196,87,60,.08);}
+  .banner.ok{border-color:var(--green); color:#a9dcbc; background:rgba(87,161,115,.08);}
+
+  /* Product grid — "shelf tag" cards */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(230px,1fr));
+    gap:14px;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:3px solid var(--amber);
+    border-radius:var(--radius);
+    padding:14px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .card .shop{font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em;}
+  .card .name{font-size:14px; font-weight:600; line-height:1.35;}
+  .card .model{font-size:11px; color:var(--text-dim);}
+  .card .price-row{display:flex; align-items:baseline; gap:8px; margin-top:auto;}
+  .card .price{font-size:20px; font-weight:600;}
+  .card .price-rrc{font-size:12px; color:var(--text-dim); text-decoration:line-through;}
+  .card .stock{font-size:11px;}
+  .stock.in{color:var(--green);}
+  .stock.out{color:var(--brick);}
+  .card .add-row{display:flex; gap:8px; margin-top:4px;}
+  .card .add-row input{width:56px; text-align:center;}
+
+  .empty{
+    padding:40px 20px; text-align:center; color:var(--text-dim);
+    border:1px dashed var(--line); border-radius:var(--radius); font-size:13px;
+  }
+
+  /* Cart drawer — "receipt" styling */
+  .overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.5);
+    display:none; z-index:30;
+  }
+  .overlay.open{display:block;}
+  .drawer{
+    position:fixed; top:0; right:0; height:100%; width:380px; max-width:92vw;
+    background:var(--panel);
+    border-left:1px solid var(--line);
+    transform:translateX(100%);
+    transition:transform .2s ease;
+    z-index:31;
+    display:flex; flex-direction:column;
+  }
+  .drawer.open{transform:translateX(0);}
+  .drawer-head{
+    padding:16px 18px; border-bottom:1px dashed var(--line);
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .drawer-body{flex:1; overflow-y:auto; padding:8px 18px;}
+  .receipt-item{
+    padding:10px 0; border-bottom:1px dashed var(--line);
+    font-size:12px;
+  }
+  .receipt-item .row1{display:flex; justify-content:space-between; font-weight:600; font-size:13px;}
+  .receipt-item .row2{display:flex; justify-content:space-between; align-items:center; margin-top:6px; color:var(--text-dim);}
+  .receipt-item .qty-ctrl{display:flex; align-items:center; gap:6px;}
+  .receipt-item .qty-ctrl button{padding:2px 8px; font-size:12px;}
+  .receipt-item .remove{color:var(--brick); font-size:11px; background:none; border:none; padding:0; text-decoration:underline;}
+  .drawer-foot{
+    padding:16px 18px; border-top:1px solid var(--line);
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .total-row{display:flex; justify-content:space-between; font-size:16px; font-weight:700;}
+
+  /* Modal (auth / checkout) */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.6);
+    display:none; align-items:center; justify-content:center; z-index:40; padding:16px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    width:100%; max-width:400px; padding:22px;
+  }
+  .modal h2{margin:0 0 4px; font-size:18px;}
+  .modal .sub{font-size:12px; color:var(--text-dim); margin-bottom:16px;}
+  .field-group{display:flex; flex-direction:column; gap:12px; margin-bottom:16px;}
+  .modal-actions{display:flex; justify-content:space-between; align-items:center; gap:10px;}
+  .switch-link{font-size:12px; color:var(--amber); background:none; border:none; padding:0; text-decoration:underline;}
+  .close-x{position:absolute; top:14px; right:16px; background:none; border:none; color:var(--text-dim); font-size:18px;}
+  .modal{position:relative;}
+
+  .tabs{display:flex; gap:4px; margin-bottom:18px; border-bottom:1px solid var(--line);}
+  .tabs button{
+    background:none; border:none; border-bottom:2px solid transparent;
+    border-radius:0; padding:8px 4px; margin-right:16px; color:var(--text-dim);
+  }
+  .tabs button.active{color:var(--text); border-bottom-color:var(--amber);}
+
+  footer{padding:24px; text-align:center; color:var(--text-dim); font-size:11px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="tag">B2B</span>
+    <div>
+      <h1 class="disp">Order&nbsp;Desk</h1>
+      <small>каталог поставщиков розничной сети</small>
+    </div>
+  </div>
+  <div class="header-right">
+    <div>
+      <label style="margin-bottom:2px;">API base URL</label>
+      <input id="apiBase" class="mono" value="http://127.0.0.1:8000/api">
+    </div>
+    <span class="userchip" id="userChip">не авторизован</span>
+    <button id="authBtn">Войти</button>
+    <button class="cart-btn" id="cartBtn">
+      Корзина
+      <span class="cart-count" id="cartCount" style="display:none;">0</span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div id="banner"></div>
+
+  <div class="tabs">
+    <button data-tab="catalog" class="active">Каталог</button>
+    <button data-tab="orders">Мои заказы</button>
+  </div>
+
+  <div id="tab-catalog">
+    <div class="toolbar">
+      <div class="field">
+        <label>Категория</label>
+        <select id="filterCategory"><option value="">Все категории</option></select>
+      </div>
+      <div class="field">
+        <label>Магазин / поставщик</label>
+        <select id="filterShop"><option value="">Все поставщики</option></select>
+      </div>
+      <div class="field" style="max-width:220px;">
+        <label>Поиск</label>
+        <input id="filterSearch" placeholder="название или модель">
+      </div>
+      <button id="refreshBtn">Обновить</button>
+    </div>
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <div id="tab-orders" style="display:none;">
+    <div id="ordersList"></div>
+  </div>
+</main>
+
+<footer>Order Desk — учебный фронтенд к <span class="mono">django_retail_chain</span> API. Данные из <span class="mono">/api/*</span>.</footer>
+
+<!-- Cart drawer -->
+<div class="overlay" id="drawerOverlay"></div>
+<div class="drawer" id="cartDrawer">
+  <div class="drawer-head">
+    <strong class="disp" style="font-size:14px;">Корзина</strong>
+    <button id="closeDrawer" style="border:none;background:none;font-size:16px;">✕</button>
+  </div>
+  <div class="drawer-body" id="cartItems"></div>
+  <div class="drawer-foot">
+    <div class="total-row"><span>Итого</span><span class="mono" id="cartTotal">0 ₽</span></div>
+    <button class="primary" id="checkoutBtn">Оформить заказ</button>
+  </div>
+</div>
+
+<!-- Auth modal -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <button class="close-x" data-close="authModal">✕</button>
+    <h2 id="authTitle" class="disp" style="font-size:16px;">Вход</h2>
+    <div class="sub" id="authSub">Токен нужен, чтобы собирать корзину и оформлять заказы</div>
+    <div id="authError" class="banner error" style="display:none;"></div>
+    <div class="field-group" id="loginFields">
+      <div><label>Email</label><input id="loginEmail" type="email"></div>
+      <div><label>Пароль</label><input id="loginPassword" type="password"></div>
+    </div>
+    <div class="field-group" id="registerFields" style="display:none;">
+      <div><label>Имя</label><input id="regFirst"></div>
+      <div><label>Фамилия</label><input id="regLast"></div>
+      <div><label>Email</label><input id="regEmail" type="email"></div>
+      <div><label>Пароль</label><input id="regPassword" type="password"></div>
+      <div><label>Компания</label><input id="regCompany"></div>
+      <div><label>Должность</label><input id="regPosition"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="switch-link" id="authSwitch">Нет аккаунта? Зарегистрироваться</button>
+      <button class="primary" id="authSubmit">Войти</button>
+    </div>
+  </div>
+</div>
+
+<!-- Checkout modal -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal">
+    <button class="close-x" data-close="checkoutModal">✕</button>
+    <h2 class="disp" style="font-size:16px;">Оформление заказа</h2>
+    <div class="sub">Выбери адрес доставки или добавь новый</div>
+    <div id="checkoutError" class="banner error" style="display:none;"></div>
+    <div id="contactList" class="field-group"></div>
+    <details style="margin-bottom:16px;">
+      <summary style="cursor:pointer; font-size:12px; color:var(--amber);">+ Добавить новый адрес</summary>
+      <div class="field-group" style="margin-top:10px;">
+        <div><label>Город</label><input id="cCity"></div>
+        <div><label>Улица</label><input id="cStreet"></div>
+        <div style="display:flex; gap:8px;">
+          <div style="flex:1"><label>Дом</label><input id="cHouse"></div>
+          <div style="flex:1"><label>Кв.</label><input id="cApt"></div>
+        </div>
+        <div><label>Телефон</label><input id="cPhone"></div>
+        <button id="addContactBtn">Сохранить адрес</button>
+      </div>
+    </details>
+    <div class="modal-actions">
+      <span></span>
+      <button class="primary" id="placeOrderBtn">Подтвердить заказ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/*
+  ВАЖНО про совместимость с бэкендом django_retail_chain:
+  Этот фронтенд написан по документированной структуре API проекта
+  (см. requests.http / README), но точные названия полей в JSON-ответах
+  (например "Token" vs "token", "Status" vs "status") зависят от твоих
+  сериализаторов и могли отличаться. Ниже — "адаптеры" pick(), которые
+  пробуют несколько вариантов ключей. Если что-то не заработает с первого
+  раза — открой консоль браузера (F12), посмотри реальный ответ API и
+  поправь нужный adapter-метод (они все собраны в одном месте ниже).
+
+  Также не забудь на бэкенде разрешить CORS для origin, с которого открыт
+  этот файл (см. пример в README / backend_changes.md).
+*/
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+const state = {
+  apiBase: $('#apiBase').value,
+  token: null,
+  user: null,
+  categories: [],
+  shops: [],
+  products: [],
+  cart: [],       // {product_info, name, model, shop, price, quantity}
+  contacts: [],
+  authMode: 'login',
+};
+
+function pick(obj, keys, fallback=undefined){
+  for(const k of keys){
+    if(obj && obj[k] !== undefined) return obj[k];
+  }
+  return fallback;
+}
+
+function money(n){
+  return new Intl.NumberFormat('ru-RU').format(n) + ' ₽';
+}
+
+function showBanner(msg, type='error', target='#banner'){
+  const el = $(target);
+  el.innerHTML = `<div class="banner ${type}">${msg}</div>`;
+  if(type==='ok') setTimeout(()=>{ if(el.innerHTML.includes(msg)) el.innerHTML=''; }, 3500);
+}
+
+async function api(path, {method='GET', body=null, auth=false} = {}){
+  const headers = {'Content-Type':'application/json'};
+  if(auth && state.token) headers['Authorization'] = `Token ${state.token}`;
+  const res = await fetch(state.apiBase.replace(/\/$/,'') + path, {
+    method, headers, body: body ? JSON.stringify(body) : null
+  });
+  let data = null;
+  try{ data = await res.json(); } catch(e){ /* empty body */ }
+  if(!res.ok){
+    const msg = pick(data||{}, ['Error','error','detail','message'], `Ошибка ${res.status}`);
+    throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+  }
+  return data;
+}
+
+/* ---------- Auth ---------- */
+
+function updateUserChip(){
+  $('#userChip').textContent = state.token ? `Вы вошли${state.user ? ' · '+state.user : ''}` : 'не авторизован';
+  $('#authBtn').textContent = state.token ? 'Выйти' : 'Войти';
+}
+
+$('#authBtn').addEventListener('click', () => {
+  if(state.token){
+    state.token = null; state.user = null; state.cart = [];
+    updateUserChip(); renderCart();
+    showBanner('Вы вышли из аккаунта', 'ok');
+    return;
+  }
+  openModal('authModal');
+});
+
+$('#authSwitch').addEventListener('click', () => {
+  state.authMode = state.authMode === 'login' ? 'register' : 'login';
+  const isLogin = state.authMode === 'login';
+  $('#authTitle').textContent = isLogin ? 'Вход' : 'Регистрация';
+  $('#loginFields').style.display = isLogin ? 'flex' : 'none';
+  $('#registerFields').style.display = isLogin ? 'none' : 'flex';
+  $('#authSubmit').textContent = isLogin ? 'Войти' : 'Зарегистрироваться';
+  $('#authSwitch').textContent = isLogin ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти';
+});
+
+$('#authSubmit').addEventListener('click', async () => {
+  $('#authError').style.display = 'none';
+  try{
+    if(state.authMode === 'login'){
+      const data = await api('/user/login', {method:'POST', body:{
+        email: $('#loginEmail').value, password: $('#loginPassword').value
+      }});
+      const token = pick(data, ['Token','token','auth_token']);
+      if(!token) throw new Error('Не нашёл токен в ответе — проверь формат ответа /user/login в консоли');
+      state.token = token;
+      state.user = $('#loginEmail').value;
+      updateUserChip();
+      closeModal('authModal');
+      showBanner('Успешный вход', 'ok');
+      loadContacts();
+    } else {
+      await api('/user/register', {method:'POST', body:{
+        first_name: $('#regFirst').value,
+        last_name: $('#regLast').value,
+        email: $('#regEmail').value,
+        password: $('#regPassword').value,
+        company: $('#regCompany').value,
+        position: $('#regPosition').value,
+      }});
+      showBanner('Регистрация отправлена — проверь email для подтверждения, затем войди', 'ok');
+      state.authMode = 'login';
+      $('#authSwitch').click(); $('#authSwitch').click(); // reset to login view
+    }
+  }catch(e){
+    $('#authError').textContent = e.message;
+    $('#authError').style.display = 'block';
+  }
+});
+
+/* ---------- Modals ---------- */
+function openModal(id){ $('#'+id).classList.add('open'); }
+function closeModal(id){ $('#'+id).classList.remove('open'); }
+$$('[data-close]').forEach(b => b.addEventListener('click', () => closeModal(b.dataset.close)));
+$$('.modal-overlay').forEach(o => o.addEventListener('click', (e) => { if(e.target===o) o.classList.remove('open'); }));
+
+/* ---------- Tabs ---------- */
+$$('.tabs button').forEach(btn => btn.addEventListener('click', () => {
+  $$('.tabs button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const tab = btn.dataset.tab;
+  $('#tab-catalog').style.display = tab==='catalog' ? 'block' : 'none';
+  $('#tab-orders').style.display = tab==='orders' ? 'block' : 'none';
+  if(tab==='orders') loadOrders();
+}));
+
+/* ---------- Catalog ---------- */
+
+async function loadCategories(){
+  try{
+    const data = await api('/categories');
+    state.categories = Array.isArray(data) ? data : pick(data, ['results'], []);
+    const sel = $('#filterCategory');
+    sel.innerHTML = '<option value="">Все категории</option>' +
+      state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  }catch(e){ /* non-fatal */ }
+}
+
+async function loadShops(){
+  try{
+    const data = await api('/shops');
+    state.shops = Array.isArray(data) ? data : pick(data, ['results'], []);
+    const sel = $('#filterShop');
+    sel.innerHTML = '<option value="">Все поставщики</option>' +
+      state.shops.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  }catch(e){ /* non-fatal */ }
+}
+
+async function loadProducts(){
+  $('#grid').innerHTML = '<div class="empty">Загружаю каталог…</div>';
+  try{
+    const params = new URLSearchParams();
+    const cat = $('#filterCategory').value, shop = $('#filterShop').value;
+    if(cat) params.set('category_id', cat);
+    if(shop) params.set('shop_id', shop);
+    const qs = params.toString();
+    const data = await api('/products' + (qs ? '?'+qs : ''));
+    state.products = Array.isArray(data) ? data : pick(data, ['results'], []);
+    renderGrid();
+  }catch(e){
+    $('#grid').innerHTML = `<div class="empty">Не удалось загрузить каталог: ${e.message}<br><small>Проверь API base URL и что сервер Django запущен.</small></div>`;
+  }
+}
+
+function renderGrid(){
+  const search = $('#filterSearch').value.trim().toLowerCase();
+  let items = state.products;
+  if(search){
+    items = items.filter(p => {
+      const name = (pick(p,['name','product_name'],'')+'').toLowerCase();
+      const model = (pick(p,['model'],'')+'').toLowerCase();
+      return name.includes(search) || model.includes(search);
+    });
+  }
+  if(!items.length){
+    $('#grid').innerHTML = '<div class="empty">Ничего не найдено. Измени фильтры или проверь, что у поставщика загружен прайс (/api/partner/update).</div>';
+    return;
+  }
+  $('#grid').innerHTML = items.map(p => {
+    const id = pick(p, ['id']);
+    const name = pick(p, ['name','product_name'], 'Без названия');
+    const model = pick(p, ['model'], '');
+    const shopName = pick(p, ['shop_name'], pick(p,['shop'],'') );
+    const price = Number(pick(p, ['price'], 0));
+    const priceRrc = Number(pick(p, ['price_rrc'], 0));
+    const qty = Number(pick(p, ['quantity'], 0));
+    return `
+      <div class="card">
+        <div class="shop">${typeof shopName === 'object' ? '' : shopName}</div>
+        <div class="name">${name}</div>
+        ${model ? `<div class="model mono">${model}</div>` : ''}
+        <div class="price-row">
+          <span class="price mono">${money(price)}</span>
+          ${priceRrc && priceRrc !== price ? `<span class="price-rrc mono">${money(priceRrc)}</span>` : ''}
+        </div>
+        <div class="stock ${qty>0?'in':'out'}">${qty>0 ? `в наличии: ${qty}` : 'нет в наличии'}</div>
+        <div class="add-row">
+          <input type="number" min="1" value="1" ${qty<1?'disabled':''} id="qty-${id}">
+          <button ${qty<1?'disabled':''} data-add="${id}">В корзину</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  $$('[data-add]').forEach(btn => btn.addEventListener('click', () => {
+    const id = btn.dataset.add;
+    const p = items.find(x => String(pick(x,['id']))===String(id));
+    const qty = Math.max(1, parseInt($('#qty-'+id).value || '1', 10));
+    addToCart(p, qty);
+  }));
+}
+
+['change'].forEach(ev => {
+  $('#filterCategory').addEventListener(ev, loadProducts);
+  $('#filterShop').addEventListener(ev, loadProducts);
+});
+$('#filterSearch').addEventListener('input', renderGrid);
+$('#refreshBtn').addEventListener('click', loadProducts);
+$('#apiBase').addEventListener('change', (e) => { state.apiBase = e.target.value; loadAll(); });
+
+/* ---------- Cart ---------- */
+
+function addToCart(p, qty){
+  if(!state.token){ showBanner('Сначала войди в аккаунт', 'error'); openModal('authModal'); return; }
+  const id = pick(p, ['id']);
+  const existing = state.cart.find(c => c.product_info === id);
+  if(existing){ existing.quantity += qty; }
+  else{
+    state.cart.push({
+      product_info: id,
+      name: pick(p, ['name','product_name'], ''),
+      price: Number(pick(p, ['price'], 0)),
+      quantity: qty,
+    });
+  }
+  renderCart();
+  showBanner('Добавлено в корзину', 'ok');
+}
+
+function cartTotal(){
+  return state.cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+}
+
+function renderCart(){
+  const count = state.cart.reduce((s,i)=>s+i.quantity,0);
+  $('#cartCount').style.display = count ? 'flex' : 'none';
+  $('#cartCount').textContent = count;
+  $('#cartTotal').textContent = money(cartTotal());
+
+  if(!state.cart.length){
+    $('#cartItems').innerHTML = '<div class="empty">Корзина пуста</div>';
+    return;
+  }
+  $('#cartItems').innerHTML = state.cart.map((i, idx) => `
+    <div class="receipt-item">
+      <div class="row1"><span>${i.name}</span><span class="mono">${money(i.price*i.quantity)}</span></div>
+      <div class="row2">
+        <div class="qty-ctrl">
+          <button data-dec="${idx}">–</button>
+          <span class="mono">${i.quantity}</span>
+          <button data-inc="${idx}">+</button>
+        </div>
+        <button class="remove" data-rm="${idx}">убрать</button>
+      </div>
+    </div>
+  `).join('');
+
+  $$('[data-inc]').forEach(b=>b.addEventListener('click',()=>{ state.cart[b.dataset.inc].quantity++; renderCart(); }));
+  $$('[data-dec]').forEach(b=>b.addEventListener('click',()=>{
+    const i = b.dataset.dec;
+    state.cart[i].quantity--;
+    if(state.cart[i].quantity<=0) state.cart.splice(i,1);
+    renderCart();
+  }));
+  $$('[data-rm]').forEach(b=>b.addEventListener('click',()=>{ state.cart.splice(b.dataset.rm,1); renderCart(); }));
+}
+
+$('#cartBtn').addEventListener('click', () => {
+  $('#cartDrawer').classList.add('open'); $('#drawerOverlay').classList.add('open');
+});
+function closeDrawer(){ $('#cartDrawer').classList.remove('open'); $('#drawerOverlay').classList.remove('open'); }
+$('#closeDrawer').addEventListener('click', closeDrawer);
+$('#drawerOverlay').addEventListener('click', closeDrawer);
+
+/* ---------- Checkout ---------- */
+
+async function loadContacts(){
+  if(!state.token) return;
+  try{
+    const data = await api('/user/contact', {auth:true});
+    state.contacts = Array.isArray(data) ? data : pick(data, ['results'], []);
+  }catch(e){ state.contacts = []; }
+}
+
+function renderContacts(){
+  if(!state.contacts.length){
+    $('#contactList').innerHTML = '<div class="empty">Адресов пока нет — добавь новый ниже</div>';
+    return;
+  }
+  $('#contactList').innerHTML = state.contacts.map(c => {
+    const id = pick(c, ['id']);
+    const label = [pick(c,['city']), pick(c,['street']), pick(c,['house'])].filter(Boolean).join(', ');
+    return `<label style="display:flex; align-items:center; gap:8px; text-transform:none; font-size:13px; color:var(--text);">
+      <input type="radio" name="contact" value="${id}" style="width:auto;"> ${label || 'адрес #'+id}
+    </label>`;
+  }).join('');
+}
+
+$('#checkoutBtn').addEventListener('click', async () => {
+  if(!state.token){ showBanner('Сначала войди в аккаунт', 'error'); openModal('authModal'); return; }
+  if(!state.cart.length){ showBanner('Корзина пуста', 'error'); return; }
+  await loadContacts();
+  renderContacts();
+  closeDrawer();
+  openModal('checkoutModal');
+});
+
+$('#addContactBtn').addEventListener('click', async () => {
+  try{
+    await api('/user/contact', {method:'POST', auth:true, body:{
+      city: $('#cCity').value, street: $('#cStreet').value,
+      house: $('#cHouse').value, apartment: $('#cApt').value,
+      phone: $('#cPhone').value,
+    }});
+    await loadContacts(); renderContacts();
+    showBanner('Адрес добавлен', 'ok', '#checkoutError');
+  }catch(e){
+    $('#checkoutError').textContent = e.message; $('#checkoutError').style.display='block';
+  }
+});
+
+$('#placeOrderBtn').addEventListener('click', async () => {
+  const contactId = document.querySelector('input[name="contact"]:checked');
+  if(!contactId){
+    $('#checkoutError').textContent = 'Выбери адрес доставки'; $('#checkoutError').style.display='block';
+    return;
+  }
+  try{
+    // Многие реализации этого API сперва требуют собрать корзину через POST /basket,
+    // а затем подтвердить заказ через POST /order с id корзины и контактом.
+    await api('/basket', {method:'POST', auth:true, body:{ items: state.cart.map(i => ({
+      product_info: i.product_info, quantity: i.quantity
+    })) }});
+    const basket = await api('/order', {auth:true}); // получить id текущего заказа-корзины
+    const basketList = Array.isArray(basket) ? basket : pick(basket, ['results'], []);
+    const basketOrder = basketList[0];
+    const orderId = basketOrder ? pick(basketOrder, ['id']) : null;
+
+    await api('/order', {method:'POST', auth:true, body:{
+      id: orderId, contact: contactId.value
+    }});
+    state.cart = []; renderCart();
+    closeModal('checkoutModal');
+    showBanner('Заказ оформлен ✓', 'ok');
+  }catch(e){
+    $('#checkoutError').textContent = 'Не удалось оформить заказ: ' + e.message + ' — проверь формат /api/order в консоли, он мог отличаться от ожидаемого.';
+    $('#checkoutError').style.display='block';
+  }
+});
+
+/* ---------- Orders tab ---------- */
+
+async function loadOrders(){
+  if(!state.token){ $('#ordersList').innerHTML = '<div class="empty">Войди в аккаунт, чтобы увидеть заказы</div>'; return; }
+  $('#ordersList').innerHTML = '<div class="empty">Загружаю…</div>';
+  try{
+    const data = await api('/order', {auth:true});
+    const orders = Array.isArray(data) ? data : pick(data, ['results'], []);
+    if(!orders.length){ $('#ordersList').innerHTML = '<div class="empty">Заказов пока нет</div>'; return; }
+    $('#ordersList').innerHTML = orders.map(o => {
+      const id = pick(o,['id']);
+      const status = pick(o,['state','status'],'—');
+      const total = pick(o,['total_sum','sum'], 0);
+      const dt = pick(o,['dt','date','created_at'],'');
+      return `<div class="card" style="max-width:420px;">
+        <div class="name">Заказ #${id}</div>
+        <div class="model mono">статус: ${status}${dt ? ' · '+dt : ''}</div>
+        <div class="price mono">${money(Number(total)||0)}</div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    $('#ordersList').innerHTML = `<div class="empty">Не удалось загрузить заказы: ${e.message}</div>`;
+  }
+}
+
+/* ---------- Init ---------- */
+async function loadAll(){
+  await Promise.all([loadCategories(), loadShops()]);
+  await loadProducts();
+}
+loadAll();
+updateUserChip();
+renderCart();
+</script>
+</body>
+</html>

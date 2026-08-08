@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install flake8
+      - name: Lint
+        run: flake8 . --max-line-length=120 --exclude=migrations,venv
+      - name: Django check
+        run: python manage.py check
+        env:
+          SECRET_KEY: dummy-ci-secret-key
+          DEBUG: "True"
